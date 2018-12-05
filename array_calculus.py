@@ -1,95 +1,71 @@
-'''
-array_calculus:
-    Contains functions for determining derivatives of mathematical functions using
-    linear algebra.'''
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 
-import math
-from matplotlib import pyplot as plt
-import numpy as np
-
-def do_inner(x, d):
-    '''
-    do_inner(x, d):
-        Fills inner values of matrice with appropriate values. Not for
-        use outside of gradient(x, f) function.
-        
-        Args:
-            x: One dimensional numpy array of length n
-            d: Two dimensional numpy array of zeros with size (n x n)
-        Returns:
-            d: Zeros for row k where k = [1,n-1] replaced with -1 and 1 at
-            column indices n-1 and n+1 respectively
-    
-    '''
-    n = 1
-    
-    while n < d.shape[0]-1:
-        d[n][n-1] = -1
-        d[n][n+1] = 1
-        n+=1
-        
-    return d
+###
+# Name: Enea DOdi
+# Student ID: 2296306
+# Email: dodi@chapman.edu
+# Course: PHYS220/MATH220/CPSC220 Fall 2018
+# Assignment: c209
+###
 
 def gradient(x):
-    '''
-    gradient(x):
-        Takes 1-dimensional array x of length n, returns central
-        difference matrix from x
+        """gradient function
+        Args: x - input numpy array consiting of a set of n domain points.
+        Returns: a n by n matrix creating a finite difference linear operator"""
+        dx = x[1]-x[0] #dx should be a very small number
+        ones = np.ones(x.size-1) #an array contiang just ones, which will be the values placed in the gradient
+        diag1 = np.diag(-1*ones,-1) #The negative one which will represent (fi - 1)
+        diag2 = np.diag(ones,1)#Postive integer one which will represent (fi - 1)
+        gradient = diag1+diag2
         
-        Args:
-            x: One dimensional numpy array of length n containing x values
-        Returns:
-            d: Two dimensional numpy array of size n by n containing
-            central difference (and edge case) values
-    '''
-    n = x.size
-    d = np.zeros((n, n))
-    dx = x[1]-x[0]
-    d = do_inner(x,d)
-    d[0][0], d[0][1] = -2, 2
-    d[n-1][n-2], d[n-1][n-1] = -2, 2
-    d = (d/(2*dx))
-    return d
-
-def gen_y(f, x):
-    '''
-    gen_y(f, x):
-        Takes 1-dimensional array x and any function
-        f and returns a vector with function output
-        values stored in the diagonal
+        #The parts of the gradient where central difference cannot be used
+        gradient[0][0] = -2 
+        gradient[0][1] = 2
+        gradient[-1][-2] = -2
+        gradient[-1][-1] = 2
         
-        Args:
-            f: Function to evaluate
-            x: Domain for function f
-        Returns:
-            y: n by n numpy array of f(x) values stored diagonally
-    '''
-    f = np.vectorize(f) # in case function isn't compatible with np arrays
-    y = f(x)
-    
-    return y
+        return np.divide(gradient,2*dx)
 
-def plot_derivatives(x, f):
-    '''Helper method to display graphs of f and f'(x)
-    
-        Args: 
-            x (np array): x values for graph
-            f (function): function to evaluate
-        Returns:
-            None'''
-    
-    # f(x)
-    plt.figure(figsize=(8,6))
-    plt.title("f(x)")
-    plt.plot(x,f(x))
-    plt.show()
-    
-    # f'(x)
-    gradient_values = gradient(x)
-    y_values = gen_y(f, x)
-    deriv_values = gradient_values@y_values
-    
-    plt.figure(figsize=(8,6))
-    plt.plot(x, deriv_values)
-    plt.title('f\'(x)')
-    plt.show
+def deriv(x,f):
+    """deriv function
+    Args: x - input numpy array consisting of a set of n domain points
+          f - function which the derivative will be calculated from
+          Returns: DerivY - the y values of the derivative"""
+    func = np.vectorize(f)
+    yVals = func(x) #Get y values of the domain points after function f is applied to them
+    #derivative creation!
+    D = gradient(x)
+    DerivY = D@yVals
+    #Return the y values of the derivative.
+    return DerivY
+
+def deriv_vs_normal_plot(x,f,name):
+        """deriv_vs_normal_plot(x,f)
+        Args: x - input numpy array consisting of a set of n domain points
+        f - function which the derivtive will be calculated from
+        Returns: nothing but returns 3 graphs, one which is simply the function f(x), 
+        the other is simply the derivative f'(x), and the third is a graph with both the 
+        plotting of the functino f(x) and f'(x)"""
+        Df = deriv(x,f)
+        titl = name+"(x)"
+        titl_deriv = name + "'(x)"
+        func = np.vectorize(f)
+        yVal = func(x)
+        s = plt.figure(figsize=(8,6))
+        a = plt.axes()
+        a.plot(x,yVal, color = "blue")
+        a.set(xlabel= "X values", ylabel= "Y values", title=titl)
+        plt.show()
+        s = plt.figure(figsize=(8,6))
+        a = plt.axes()
+        a.plot(x,Df, color = "red")
+        a.set(xlabel= "X values", ylabel= "Y values", title=titl_deriv)
+        plt.show()
+        s = plt.figure(figsize=(8,6))
+        a = plt.axes()
+        a.plot(x,yVal, color = "blue")
+        a.plot(x,Df,color = "red")
+        a.set(xlabel= "X values", ylabel= "Y values", title=titl + " vs " +titl_deriv)
+        plt.show()
+        

@@ -8,7 +8,9 @@
 # Course: PHYS220/MATH220/CPSC220 Fall 2018
 # Assignment: Cw11
 ###
-'''Contains all the code for cw11'''
+
+'''This module (odes.py) contains all the functions
+necessary for cw 11'''
 
 import numpy as np
 from matplotlib import pyplot as plt
